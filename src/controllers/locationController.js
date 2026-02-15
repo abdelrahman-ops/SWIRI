@@ -6,6 +6,7 @@ import Alert from "../models/Alert.js";
 import { distanceMeters } from "../utils/geo.js";
 import { isWithinSchedule } from "../utils/schedule.js";
 import { getIo } from "../socketStore.js";
+import ApiError from "../core/ApiError.js";
 
 const createLocation = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ const createLocation = async (req, res, next) => {
 
     const child = await Child.findById(childId);
     if (!child) {
-      return res.status(404).json({ error: { message: "Child not found", status: 404 } });
+      return next(new ApiError(404, "Child not found", "NOT_FOUND"));
     }
 
     const location = await Location.create({

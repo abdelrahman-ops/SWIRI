@@ -1,7 +1,7 @@
 let io;
 
 const setIo = (instance) => {
-  io = instance;
+    io = instance;
 };
 
 const getIo = () => io;

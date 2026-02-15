@@ -1,0 +1,39 @@
+{
+  "info": {
+    "_postman_id": "3d204e9d-8d9e-4dfc-a4ca-9eb5d2945af4",
+    "name": "Swiri AI Risk",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "token", "value": "" },
+    { "key": "childId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create AI Risk Assessment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"heart_rate_raw\": [80, 82, 90, 135, 145],\n  \"accelerometer_raw\": [1.1, 1.2, 3.5, 4.0, 3.8],\n  \"source\": \"watch\"\n}"
+        },
+        "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+      }
+    },
+    {
+      "name": "List AI Risk Assessments",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+      }
+    }
+  ]
+}

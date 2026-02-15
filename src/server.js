@@ -7,12 +7,12 @@ import { setupSocket } from "./socket.js";
 const PORT = process.env.PORT || 4000;
 
 (async () => {
-  await connectDb(process.env.MONGO_URI);
+    await connectDb(process.env.MONGO_URI);
 
-  const server = http.createServer(app);
-  setupSocket(server);
+    const server = http.createServer(app);
+    setupSocket(server);
 
-  server.listen(PORT, () => {
-    console.log(`Swiri backend listening on port ${PORT}`);
-  });
+    server.listen(PORT, () => {
+        console.log(`Swiri backend listening on port ${PORT}`);
+    });
 })();

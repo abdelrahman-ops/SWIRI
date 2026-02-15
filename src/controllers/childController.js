@@ -1,5 +1,6 @@
 import Child from "../models/Child.js";
 import User from "../models/User.js";
+import ApiError from "../core/ApiError.js";
 
 const createChild = async (req, res, next) => {
   try {
@@ -27,7 +28,7 @@ const getChild = async (req, res, next) => {
   try {
     const child = await Child.findById(req.params.childId).populate("guardians school device");
     if (!child) {
-      return res.status(404).json({ error: { message: "Child not found", status: 404 } });
+      return next(new ApiError(404, "Child not found", "NOT_FOUND"));
     }
     return res.json({ child });
   } catch (err) {
@@ -44,7 +45,7 @@ const updateChild = async (req, res, next) => {
     };
     const child = await Child.findByIdAndUpdate(req.params.childId, updates, { new: true });
     if (!child) {
-      return res.status(404).json({ error: { message: "Child not found", status: 404 } });
+      return next(new ApiError(404, "Child not found", "NOT_FOUND"));
     }
     return res.json({ child });
   } catch (err) {

@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { signToken } from "../utils/token.js";
+import ApiError from "../core/ApiError.js";
+import ApiResponse from "../core/ApiResponse.js";
 
 const normalizePhone = (phone = "") => phone.replace(/\s+/g, "").trim();
 
@@ -24,9 +26,7 @@ const register = async (req, res, next) => {
     } = req.body;
 
     if (password !== confirmPassword) {
-      return res.status(400).json({
-        error: { message: "Password and confirm password do not match", status: 400 }
-      });
+      return next(new ApiError(400, "Password and confirm password do not match", "VALIDATION_ERROR"));
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -36,9 +36,7 @@ const register = async (req, res, next) => {
       $or: [{ email: normalizedEmail }, { phone: normalizedPhone }]
     });
     if (exists) {
-      return res.status(409).json({
-        error: { message: "Email or phone already in use", status: 409 }
-      });
+      return next(new ApiError(409, "Email or phone already in use", "CONFLICT"));
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -54,7 +52,7 @@ const register = async (req, res, next) => {
     });
 
     const token = signToken(user);
-    return res.status(201).json({ token, user: publicUser(user) });
+    return ApiResponse.created(res, { token, user: publicUser(user) }, "Account created successfully");
   } catch (err) {
     return next(err);
   }
@@ -71,22 +69,20 @@ const login = async (req, res, next) => {
 
     const user = await User.findOne(query).populate("children");
     if (!user) {
-      return res.status(401).json({ error: { message: "Invalid credentials", status: 401 } });
+      return next(new ApiError(401, "Invalid credentials", "AUTH_FAILED"));
     }
 
     if (user.authProvider !== "password") {
-      return res.status(401).json({
-        error: { message: "Use social login for this account", status: 401 }
-      });
+      return next(new ApiError(401, "Use social login for this account", "AUTH_PROVIDER_MISMATCH"));
     }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
-      return res.status(401).json({ error: { message: "Invalid credentials", status: 401 } });
+      return next(new ApiError(401, "Invalid credentials", "AUTH_FAILED"));
     }
 
     const token = signToken(user);
-    return res.json({ token, user: publicUser(user) });
+    return ApiResponse.ok(res, { token, user: publicUser(user) }, "Login successful");
   } catch (err) {
     return next(err);
   }
@@ -104,9 +100,11 @@ const forgotPassword = async (req, res, next) => {
       await User.findOne(query);
     }
 
-    return res.json({
-      message: "If an account exists, password reset instructions have been sent"
-    });
+    return ApiResponse.ok(
+      res,
+      { sent: true },
+      "If an account exists, password reset instructions have been sent"
+    );
   } catch (err) {
     return next(err);
   }

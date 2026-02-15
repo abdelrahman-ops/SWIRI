@@ -3,9 +3,13 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import createError from "http-errors";
 
 import apiRouter from "./routes/index.js";
+import ApiResponse from "./core/ApiResponse.js";
+import { requestContext } from "./middleware/requestContext.js";
+import { responseEnvelope } from "./middleware/responseEnvelope.js";
+import { notFound } from "./middleware/notFound.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -15,33 +19,25 @@ app.use(helmet());
 app.use(cors({ origin: origins.length ? origins : true, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
+app.use(requestContext);
+app.use(responseEnvelope);
 app.use(
-  rateLimit({
-    windowMs: 60 * 1000,
-    max: 120,
-    standardHeaders: true,
-    legacyHeaders: false
-  })
+    rateLimit({
+        windowMs: 60 * 1000,
+        max: 120,
+        standardHeaders: true,
+        legacyHeaders: false
+    })
 );
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", service: "swiri" });
+    return ApiResponse.ok(res, { status: "ok", service: "swiri" }, "Service health is good");
 });
 
 app.use("/api", apiRouter);
 
-app.use((req, res, next) => {
-  next(createError(404, "Not Found"));
-});
+app.use(notFound);
 
-app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  res.status(status).json({
-    error: {
-      message: err.message || "Server error",
-      status
-    }
-  });
-});
+app.use(errorHandler);
 
 export default app;

@@ -7,16 +7,16 @@ import { listAlerts, createAlert } from "../controllers/alertController.js";
 const router = express.Router();
 
 router.get(
-  "/",
-  auth,
-  validate(
-    Joi.object({
-      body: Joi.object({}),
-      params: Joi.object({}),
-      query: Joi.object({ childId: Joi.string().optional() })
-    })
-  ),
-  listAlerts
+    "/",
+    auth,
+    validate(
+        Joi.object({
+        body: Joi.object({}),
+        params: Joi.object({}),
+        query: Joi.object({ childId: Joi.string().optional() })
+        })
+    ),
+    listAlerts
 );
 
 router.post(

@@ -1,5 +1,6 @@
 import Device from "../models/Device.js";
 import Child from "../models/Child.js";
+import ApiError from "../core/ApiError.js";
 
 const registerDevice = async (req, res, next) => {
   try {
@@ -16,11 +17,11 @@ const assignDevice = async (req, res, next) => {
     const { childId } = req.body;
     const device = await Device.findById(req.params.deviceId);
     if (!device) {
-      return res.status(404).json({ error: { message: "Device not found", status: 404 } });
+      return next(new ApiError(404, "Device not found", "NOT_FOUND"));
     }
     const child = await Child.findById(childId);
     if (!child) {
-      return res.status(404).json({ error: { message: "Child not found", status: 404 } });
+      return next(new ApiError(404, "Child not found", "NOT_FOUND"));
     }
     device.child = child.id;
     await device.save();

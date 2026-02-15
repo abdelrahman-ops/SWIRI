@@ -7,24 +7,24 @@ import { createSummary, listSummaries } from "../controllers/activityController.
 const router = express.Router();
 
 router.post(
-  "/",
-  auth,
-  validate(
-    Joi.object({
-      body: Joi.object({
-        childId: Joi.string().required(),
-        date: Joi.date().required(),
-        steps: Joi.number().min(0).optional(),
-        activeMinutes: Joi.number().min(0).optional(),
-        restMinutes: Joi.number().min(0).optional(),
-        heartRateAvg: Joi.number().min(0).optional(),
-        heartRateMax: Joi.number().min(0).optional()
-      }).required(),
-      params: Joi.object({}),
-      query: Joi.object({})
-    })
-  ),
-  createSummary
+    "/",
+    auth,
+    validate(
+        Joi.object({
+        body: Joi.object({
+            childId: Joi.string().required(),
+            date: Joi.date().required(),
+            steps: Joi.number().min(0).optional(),
+            activeMinutes: Joi.number().min(0).optional(),
+            restMinutes: Joi.number().min(0).optional(),
+            heartRateAvg: Joi.number().min(0).optional(),
+            heartRateMax: Joi.number().min(0).optional()
+        }).required(),
+            params: Joi.object({}),
+            query: Joi.object({})
+        })
+    ),
+    createSummary
 );
 
 router.get(

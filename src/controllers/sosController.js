@@ -2,13 +2,14 @@ import SosEvent from "../models/SosEvent.js";
 import Alert from "../models/Alert.js";
 import Child from "../models/Child.js";
 import { getIo } from "../socketStore.js";
+import ApiError from "../core/ApiError.js";
 
 const triggerSos = async (req, res, next) => {
   try {
     const { childId, triggeredBy, coordinates } = req.body;
     const child = await Child.findById(childId);
     if (!child) {
-      return res.status(404).json({ error: { message: "Child not found", status: 404 } });
+      return next(new ApiError(404, "Child not found", "NOT_FOUND"));
     }
 
     const event = await SosEvent.create({
@@ -48,7 +49,7 @@ const resolveSos = async (req, res, next) => {
       { new: true }
     );
     if (!event) {
-      return res.status(404).json({ error: { message: "SOS not found", status: 404 } });
+      return next(new ApiError(404, "SOS not found", "NOT_FOUND"));
     }
     return res.json({ event });
   } catch (err) {
