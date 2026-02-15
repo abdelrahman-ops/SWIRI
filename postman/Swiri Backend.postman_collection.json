@@ -1,0 +1,383 @@
+{
+  "info": {
+    "_postman_id": "6df2f08d-825c-46ac-93f0-7ad3a34a4af5",
+    "name": "Swiri Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "token", "value": "" },
+    { "key": "childId", "value": "" },
+    { "key": "schoolId", "value": "" },
+    { "key": "deviceId", "value": "" },
+    { "key": "sosId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mariam@gmail.com\",\n  \"phone\": \"+201111111111\",\n  \"password\": \"12345678\",\n  \"confirmPassword\": \"12345678\",\n  \"agreedToTerms\": true,\n  \"role\": \"parent\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/signup"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('token', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Email or Phone)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"mariam@gmail.com\",\n  \"password\": \"12345678\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('token', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"mariam@gmail.com\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/forgot-password"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/users/me"
+          }
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mariam\",\n  \"phone\": \"+201111111111\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Children",
+      "item": [
+        {
+          "name": "Create Child",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Adam\",\n  \"dateOfBirth\": \"2017-05-12\"\n}"
+            },
+            "url": "{{baseUrl}}/api/children"
+          }
+        },
+        {
+          "name": "List Children",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/children"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schools",
+      "item": [
+        {
+          "name": "Create School",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Future School\",\n  \"address\": \"Cairo\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/schools"
+          }
+        },
+        {
+          "name": "List Schools",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/schools"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "Register Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"DEV-1001\",\n  \"type\": \"watch\"\n}"
+            },
+            "url": "{{baseUrl}}/api/devices"
+          }
+        },
+        {
+          "name": "Assign Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/devices/{{deviceId}}/assign"
+          }
+        },
+        {
+          "name": "List Devices",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/devices"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations & Geofence",
+      "item": [
+        {
+          "name": "Create Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444],\n  \"accuracy\": 10\n}"
+            },
+            "url": "{{baseUrl}}/api/locations"
+          }
+        },
+        {
+          "name": "Get Latest Location",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/locations/latest/{{childId}}"
+          }
+        },
+        {
+          "name": "Create Geofence",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"School Zone\",\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444],\n  \"radiusM\": 200,\n  \"schedule\": {\n    \"days\": [1,2,3,4,5],\n    \"start\": \"07:00\",\n    \"end\": \"16:00\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/geofences"
+          }
+        },
+        {
+          "name": "List Geofences",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/geofences?childId={{childId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alerts & SOS",
+      "item": [
+        {
+          "name": "Create Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"custom\",\n  \"severity\": \"high\",\n  \"childId\": \"{{childId}}\",\n  \"message\": \"Manual guardian alert\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/alerts"
+          }
+        },
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/alerts?childId={{childId}}"
+          }
+        },
+        {
+          "name": "Trigger SOS",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"triggeredBy\": \"child\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/sos"
+          }
+        },
+        {
+          "name": "Resolve SOS",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/sos/{{sosId}}/resolve"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activity, Attendance, Analytics",
+      "item": [
+        {
+          "name": "Create Activity Summary",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"date\": \"2026-02-15\",\n  \"steps\": 4300,\n  \"activeMinutes\": 72,\n  \"restMinutes\": 540,\n  \"heartRateAvg\": 95,\n  \"heartRateMax\": 140\n}"
+            },
+            "url": "{{baseUrl}}/api/activities"
+          }
+        },
+        {
+          "name": "List Activity Summaries",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/activities/{{childId}}"
+          }
+        },
+        {
+          "name": "Behavior Insights",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/analytics/behavior/{{childId}}"
+          }
+        },
+        {
+          "name": "Record Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"schoolId\": \"{{schoolId}}\",\n  \"status\": \"in\",\n  \"source\": \"nfc\"\n}"
+            },
+            "url": "{{baseUrl}}/api/attendance"
+          }
+        },
+        {
+          "name": "List Attendance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/attendance?childId={{childId}}"
+          }
+        }
+      ]
+    }
+  ]
+}
