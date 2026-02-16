@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+docs
+postman
+*.md
+*.mjs
+api
+vercel.json
+validate-features.js
+Dockerfile
+.dockerignore
