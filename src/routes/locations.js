@@ -18,7 +18,8 @@ router.post(
         accuracy: Joi.number().optional(),
         speed: Joi.number().optional(),
         heading: Joi.number().optional(),
-        recordedAt: Joi.date().optional()
+        recordedAt: Joi.date().optional(),
+        imageUrl: Joi.string().uri().optional()
       }).required(),
       params: Joi.object({}),
       query: Joi.object({})

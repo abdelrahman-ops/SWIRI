@@ -10,7 +10,7 @@ import ApiError from "../core/ApiError.js";
 
 const createLocation = async (req, res, next) => {
   try {
-    const { childId, deviceId, coordinates, accuracy, speed, heading, recordedAt } = req.body;
+    const { childId, deviceId, coordinates, accuracy, speed, heading, recordedAt, imageUrl } = req.body;
 
     const child = await Child.findById(childId);
     if (!child) {
@@ -49,6 +49,7 @@ const createLocation = async (req, res, next) => {
           child: childId,
           message: `${child.name} left ${fence.name}`,
           location: { type: "Point", coordinates },
+          imageUrl,
           recipients: child.guardians
         });
         if (io) {

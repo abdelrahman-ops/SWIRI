@@ -10,6 +10,7 @@ const alertSchema = new mongoose.Schema(
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: { type: [Number], default: [0, 0] }
     },
+    imageUrl: { type: String },
     recipients: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     resolved: { type: Boolean, default: false }
   },

@@ -2,8 +2,9 @@
 
 Backend API for the Swiri child-safety platform. Includes:
 - Real-time location tracking (Socket.IO)
-- SOS alerts
+- SOS alerts with camera integration
 - Geofencing + time-based notifications
+- Camera image attachment for alerts
 - Attendance tracking (NFC/BLE/manual)
 - Activity summaries
 - Role-based access (parent, school, staff, admin, driver)
@@ -146,3 +147,59 @@ Expected AI response format:
 ```
 
 If `prediction_code = 2` or `status_label = DANGER`, backend auto-creates a critical vitals alert and pushes socket notifications to guardians.
+
+## Camera Integration
+
+All alert-generating endpoints now support optional `imageUrl` parameter to attach camera images:
+
+### Supported Endpoints
+
+1. **POST `/api/alerts`** - Manual alert creation with image
+   ```json
+   {
+     "type": "custom",
+     "severity": "high",
+     "childId": "...",
+     "message": "Alert message",
+     "imageUrl": "https://example.com/camera/image.jpg",
+     "coordinates": [lng, lat]
+   }
+   ```
+
+2. **POST `/api/sos`** - SOS event with camera image
+   ```json
+   {
+     "childId": "...",
+     "triggeredBy": "device",
+     "coordinates": [lng, lat],
+     "imageUrl": "https://example.com/camera/sos-image.jpg"
+   }
+   ```
+
+3. **POST `/api/locations`** - Location update with camera image for geofence alerts
+   ```json
+   {
+     "childId": "...",
+     "deviceId": "...",
+     "coordinates": [lng, lat],
+     "imageUrl": "https://example.com/camera/location-image.jpg"
+   }
+   ```
+   When a geofence violation is detected, the alert will include the provided image.
+
+4. **POST `/api/analytics/ai-risk/:childId`** - AI risk assessment with camera image
+   ```json
+   {
+     "heart_rate_raw": [80, 82, 90, 135, 145],
+     "accelerometer_raw": [1.1, 1.2, 3.5, 4.0, 3.8],
+     "imageUrl": "https://example.com/camera/vitals-image.jpg"
+   }
+   ```
+   If danger is detected, the alert will include the camera image.
+
+### Image URL Requirements
+
+- Must be a valid URI/URL format
+- Should be publicly accessible or use a secure signed URL
+- Recommended: Use a CDN or cloud storage (S3, Azure Blob, etc.)
+- Images are referenced by URL only (not stored in MongoDB)
