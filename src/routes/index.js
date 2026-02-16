@@ -12,6 +12,7 @@ import activityRoutes from "./activities.js";
 import sosRoutes from "./sos.js";
 import attendanceRoutes from "./attendance.js";
 import analyticsRoutes from "./analytics.js";
+import simulateRoutes from "./simulate.js";
 
 const router = express.Router();
 
@@ -27,5 +28,6 @@ router.use("/activities", activityRoutes);
 router.use("/sos", sosRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/simulate", simulateRoutes);
 
 export default router;
