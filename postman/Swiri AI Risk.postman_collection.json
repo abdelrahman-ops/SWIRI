@@ -2,38 +2,187 @@
   "info": {
     "_postman_id": "3d204e9d-8d9e-4dfc-a4ca-9eb5d2945af4",
     "name": "Swiri AI Risk",
+    "description": "AI Risk Assessment and Simulation endpoints for the Swiri backend.\n\nThis collection covers:\n- Direct AI risk assessment (analytics)\n- AI simulation pipeline (sensor data -> classify -> save -> alerts)\n- Preset scenario execution for demos",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "baseUrl", "value": "https://swiri.vercel.app" },
     { "key": "token", "value": "" },
     { "key": "childId", "value": "" }
   ],
   "item": [
     {
-      "name": "Create AI Risk Assessment",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" },
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"heart_rate_raw\": [80, 82, 90, 135, 145],\n  \"accelerometer_raw\": [1.1, 1.2, 3.5, 4.0, 3.8],\n  \"source\": \"watch\"\n}"
+      "name": "AI Risk Assessment",
+      "description": "Direct AI risk classification. Sends sensor data, gets back prediction + saves to database.",
+      "item": [
+        {
+          "name": "Create AI Risk Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"heart_rate_raw\": [80, 82, 90, 135, 145, 90, 88, 92, 95, 100],\n  \"accelerometer_raw\": [1.1, 1.2, 3.5, 4.0, 3.8, 1.5, 1.2, 1.0, 1.3, 1.1],\n  \"source\": \"watch\"\n}"
+            },
+            "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+          }
         },
-        "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
-      }
+        {
+          "name": "List AI Risk Assessments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+          }
+        }
+      ]
     },
     {
-      "name": "List AI Risk Assessments",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
-      }
+      "name": "Simulation Pipeline",
+      "description": "Full end-to-end simulation. Runs: AI classify -> save RiskAssessment -> save Location -> check Geofences -> create Alerts/SOS -> emit Socket events.",
+      "item": [
+        {
+          "name": "Simulate Watch Data (custom raw data)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444],\n  \"heart_rate_raw\": [155, 160, 158, 162, 170, 175, 168, 172, 180, 165, 155, 160, 158, 162, 170, 175, 168, 172, 180, 165, 155, 160, 158, 162, 170, 175, 168, 172, 180, 165],\n  \"accelerometer_raw\": [3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0],\n  \"source\": \"watch\"\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/watch-data"
+          }
+        },
+        {
+          "name": "Scenario - Normal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/normal"
+          }
+        },
+        {
+          "name": "Scenario - Playing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/playing"
+          }
+        },
+        {
+          "name": "Scenario - Danger (Struggle)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/danger_struggle"
+          }
+        },
+        {
+          "name": "Scenario - Danger (Freeze)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/danger_freeze"
+          }
+        },
+        {
+          "name": "Scenario - Geofence Breach",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/geofence_breach"
+          }
+        },
+        {
+          "name": "Scenario - SOS Emergency",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/sos"
+          }
+        },
+        {
+          "name": "Full Demo (all scenarios)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/full-demo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Behavior Insights",
+      "description": "Behavioral analysis based on activity summaries.",
+      "item": [
+        {
+          "name": "Get Behavior Insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/analytics/behavior/{{childId}}"
+          }
+        }
+      ]
     }
   ]
 }

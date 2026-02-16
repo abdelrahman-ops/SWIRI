@@ -2,15 +2,18 @@
   "info": {
     "_postman_id": "6df2f08d-825c-46ac-93f0-7ad3a34a4af5",
     "name": "Swiri Backend",
+    "description": "Full API collection for the Swiri child-safety backend.\n\nBase URL (deployed): https://swiri.vercel.app\nBase URL (local): http://localhost:4000\n\nHow to use:\n1. Run \"Sign Up\" or \"Login\" to get a token (auto-saved)\n2. Run \"Create Child\" to register a child (auto-saved)\n3. All other requests use {{token}} and {{childId}} automatically",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "baseUrl", "value": "https://swiri.vercel.app" },
     { "key": "token", "value": "" },
     { "key": "childId", "value": "" },
     { "key": "schoolId", "value": "" },
     { "key": "deviceId", "value": "" },
-    { "key": "sosId", "value": "" }
+    { "key": "sosId", "value": "" },
+    { "key": "geofenceId", "value": "" },
+    { "key": "alertId", "value": "" }
   ],
   "item": [
     {
@@ -28,6 +31,7 @@
     },
     {
       "name": "Auth",
+      "description": "Authentication endpoints. No token required.",
       "item": [
         {
           "name": "Sign Up",
@@ -45,8 +49,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.collectionVariables.set('token', data.token);"
+                  "const body = pm.response.json();",
+                  "const token = body?.data?.token || body?.token;",
+                  "if (token) pm.collectionVariables.set('token', token);"
                 ],
                 "type": "text/javascript"
               }
@@ -69,8 +74,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.collectionVariables.set('token', data.token);"
+                  "const body = pm.response.json();",
+                  "const token = body?.data?.token || body?.token;",
+                  "if (token) pm.collectionVariables.set('token', token);"
                 ],
                 "type": "text/javascript"
               }
@@ -93,6 +99,7 @@
     },
     {
       "name": "Users",
+      "description": "Current user profile management. Requires auth token.",
       "item": [
         {
           "name": "Get Me",
@@ -121,6 +128,7 @@
     },
     {
       "name": "Children",
+      "description": "Child profile management. Parent creates and lists their children.",
       "item": [
         {
           "name": "Create Child",
@@ -135,7 +143,20 @@
               "raw": "{\n  \"name\": \"Adam\",\n  \"dateOfBirth\": \"2017-05-12\"\n}"
             },
             "url": "{{baseUrl}}/api/children"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.child?._id || body?.data?._id || body?.child?._id;",
+                  "if (id) pm.collectionVariables.set('childId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "List Children",
@@ -143,15 +164,54 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{baseUrl}}/api/children"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const kids = body?.data?.children || body?.children || body?.data || [];",
+                  "if (kids.length && !pm.collectionVariables.get('childId')) {",
+                  "  pm.collectionVariables.set('childId', kids[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Child",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/children/{{childId}}"
+          }
+        },
+        {
+          "name": "Update Child",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Adam Updated\"\n}"
+            },
+            "url": "{{baseUrl}}/api/children/{{childId}}"
           }
         }
       ]
     },
     {
       "name": "Schools",
+      "description": "School management. Creating schools requires 'school' or 'admin' role.",
       "item": [
         {
-          "name": "Create School",
+          "name": "Create School (school/admin only)",
           "request": {
             "method": "POST",
             "header": [
@@ -163,7 +223,20 @@
               "raw": "{\n  \"name\": \"Future School\",\n  \"address\": \"Cairo\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
             },
             "url": "{{baseUrl}}/api/schools"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.school?._id || body?.school?._id;",
+                  "if (id) pm.collectionVariables.set('schoolId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "List Schools",
@@ -177,9 +250,10 @@
     },
     {
       "name": "Devices",
+      "description": "Wearable device management. Registering requires 'admin' or 'school' role. Assigning also allows 'parent'.",
       "item": [
         {
-          "name": "Register Device",
+          "name": "Register Device (admin/school only)",
           "request": {
             "method": "POST",
             "header": [
@@ -191,10 +265,23 @@
               "raw": "{\n  \"serialNumber\": \"DEV-1001\",\n  \"type\": \"watch\"\n}"
             },
             "url": "{{baseUrl}}/api/devices"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.device?._id || body?.device?._id;",
+                  "if (id) pm.collectionVariables.set('deviceId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
-          "name": "Assign Device",
+          "name": "Assign Device to Child",
           "request": {
             "method": "POST",
             "header": [
@@ -219,7 +306,8 @@
       ]
     },
     {
-      "name": "Locations & Geofence",
+      "name": "Locations",
+      "description": "GPS location tracking. Posting a location automatically checks geofences and creates alerts on breach.",
       "item": [
         {
           "name": "Create Location",
@@ -243,7 +331,13 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{baseUrl}}/api/locations/latest/{{childId}}"
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Geofences",
+      "description": "Safe zone management. A geofence has a center point + radius. When a child's location falls outside, an alert is auto-generated.",
+      "item": [
         {
           "name": "Create Geofence",
           "request": {
@@ -257,7 +351,20 @@
               "raw": "{\n  \"name\": \"School Zone\",\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444],\n  \"radiusM\": 200,\n  \"schedule\": {\n    \"days\": [1,2,3,4,5],\n    \"start\": \"07:00\",\n    \"end\": \"16:00\"\n  }\n}"
             },
             "url": "{{baseUrl}}/api/geofences"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.geofence?._id || body?.geofence?._id;",
+                  "if (id) pm.collectionVariables.set('geofenceId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "List Geofences",
@@ -270,7 +377,8 @@
       ]
     },
     {
-      "name": "Alerts & SOS",
+      "name": "Alerts",
+      "description": "Alert management. Alerts can be auto-created (geofence breach, danger AI detection) or manually created.",
       "item": [
         {
           "name": "Create Alert",
@@ -285,7 +393,20 @@
               "raw": "{\n  \"type\": \"custom\",\n  \"severity\": \"high\",\n  \"childId\": \"{{childId}}\",\n  \"message\": \"Manual guardian alert\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
             },
             "url": "{{baseUrl}}/api/alerts"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.alert?._id || body?.alert?._id;",
+                  "if (id) pm.collectionVariables.set('alertId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "List Alerts",
@@ -294,7 +415,13 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{baseUrl}}/api/alerts?childId={{childId}}"
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "SOS",
+      "description": "Emergency SOS events. Can be triggered manually by child/parent or automatically by the AI when danger is detected.",
+      "item": [
         {
           "name": "Trigger SOS",
           "request": {
@@ -308,7 +435,20 @@
               "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"triggeredBy\": \"child\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
             },
             "url": "{{baseUrl}}/api/sos"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const id = body?.data?.event?._id || body?.event?._id;",
+                  "if (id) pm.collectionVariables.set('sosId', id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Resolve SOS",
@@ -321,7 +461,8 @@
       ]
     },
     {
-      "name": "Activity, Attendance, Analytics",
+      "name": "Activities",
+      "description": "Daily activity summaries from the wearable (steps, heart rate, etc).",
       "item": [
         {
           "name": "Create Activity Summary",
@@ -345,15 +486,13 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{baseUrl}}/api/activities/{{childId}}"
           }
-        },
-        {
-          "name": "Behavior Insights",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{baseUrl}}/api/analytics/behavior/{{childId}}"
-          }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "description": "School attendance tracking via NFC/BLE tap or manual entry.",
+      "item": [
         {
           "name": "Record Attendance",
           "request": {
@@ -375,6 +514,169 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{baseUrl}}/api/attendance?childId={{childId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics & AI Risk",
+      "description": "Behavior insights and AI-powered risk assessment from wearable sensor data.",
+      "item": [
+        {
+          "name": "Behavior Insights",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/analytics/behavior/{{childId}}"
+          }
+        },
+        {
+          "name": "Create AI Risk Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"heart_rate_raw\": [80, 82, 90, 135, 145, 90, 88, 92, 95, 100],\n  \"accelerometer_raw\": [1.1, 1.2, 3.5, 4.0, 3.8, 1.5, 1.2, 1.0, 1.3, 1.1],\n  \"source\": \"watch\"\n}"
+            },
+            "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+          }
+        },
+        {
+          "name": "List AI Risk Assessments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/analytics/ai-risk/{{childId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simulation",
+      "description": "End-to-end simulation endpoints. These trigger the full pipeline: AI classification -> risk assessment -> location -> geofence check -> alerts/SOS -> socket events. Use these for testing and demos.",
+      "item": [
+        {
+          "name": "Simulate Watch Data (raw)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444],\n  \"heart_rate_raw\": [155, 160, 158, 162, 170, 175, 168, 172, 180, 165, 155, 160, 158, 162, 170, 175, 168, 172, 180, 165, 155, 160, 158, 162, 170, 175, 168, 172, 180, 165],\n  \"accelerometer_raw\": [3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0, 3.2, 3.5, 2.8, 3.9, 4.1, 3.7, 3.3, 2.9, 3.8, 4.0],\n  \"source\": \"watch\"\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/watch-data"
+          }
+        },
+        {
+          "name": "Simulate Scenario - Normal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/normal"
+          }
+        },
+        {
+          "name": "Simulate Scenario - Playing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/playing"
+          }
+        },
+        {
+          "name": "Simulate Scenario - Danger (Struggle)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/danger_struggle"
+          }
+        },
+        {
+          "name": "Simulate Scenario - Danger (Freeze)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/danger_freeze"
+          }
+        },
+        {
+          "name": "Simulate Scenario - Geofence Breach",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/geofence_breach"
+          }
+        },
+        {
+          "name": "Simulate Scenario - SOS Emergency",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/scenario/sos"
+          }
+        },
+        {
+          "name": "Simulate Full Demo (all scenarios)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"{{childId}}\",\n  \"coordinates\": [31.2357, 30.0444]\n}"
+            },
+            "url": "{{baseUrl}}/api/simulate/full-demo"
           }
         }
       ]
