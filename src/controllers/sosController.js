@@ -6,7 +6,7 @@ import ApiError from "../core/ApiError.js";
 
 const triggerSos = async (req, res, next) => {
   try {
-    const { childId, triggeredBy, coordinates } = req.body;
+    const { childId, triggeredBy, coordinates, imageUrl } = req.body;
     const child = await Child.findById(childId);
     if (!child) {
       return next(new ApiError(404, "Child not found", "NOT_FOUND"));
@@ -15,7 +15,8 @@ const triggerSos = async (req, res, next) => {
     const event = await SosEvent.create({
       child: childId,
       triggeredBy,
-      location: coordinates ? { type: "Point", coordinates } : undefined
+      location: coordinates ? { type: "Point", coordinates } : undefined,
+      imageUrl
     });
 
     const alert = await Alert.create({
@@ -24,6 +25,7 @@ const triggerSos = async (req, res, next) => {
       child: childId,
       message: `SOS triggered for ${child.name}`,
       location: coordinates ? { type: "Point", coordinates } : undefined,
+      imageUrl,
       recipients: child.guardians
     });
 

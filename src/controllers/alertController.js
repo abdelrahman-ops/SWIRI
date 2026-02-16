@@ -14,13 +14,14 @@ const listAlerts = async (req, res, next) => {
 
 const createAlert = async (req, res, next) => {
   try {
-    const { type, severity, childId, message, coordinates, recipients } = req.body;
+    const { type, severity, childId, message, coordinates, recipients, imageUrl } = req.body;
     const alert = await Alert.create({
       type,
       severity,
       child: childId,
       message,
       location: coordinates ? { type: "Point", coordinates } : undefined,
+      imageUrl,
       recipients
     });
 

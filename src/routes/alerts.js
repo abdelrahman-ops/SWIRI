@@ -30,6 +30,7 @@ router.post(
         childId: Joi.string().required(),
         message: Joi.string().required(),
         coordinates: Joi.array().items(Joi.number()).length(2).optional(),
+        imageUrl: Joi.string().uri().optional(),
         recipients: Joi.array().items(Joi.string()).optional()
       }).required(),
       params: Joi.object({}),

@@ -54,7 +54,7 @@ const behaviorInsights = async (req, res, next) => {
 const createAiRiskAssessment = async (req, res, next) => {
   try {
     const { childId } = req.params;
-    const { heart_rate_raw, accelerometer_raw, source } = req.body;
+    const { heart_rate_raw, accelerometer_raw, source, imageUrl } = req.body;
 
     const child = await Child.findById(childId);
     if (!child) {
@@ -82,6 +82,7 @@ const createAiRiskAssessment = async (req, res, next) => {
         severity: "critical",
         child: childId,
         message: `AI detected danger for ${child.name} (${aiPrediction.confidence_percentage}% confidence)`,
+        imageUrl,
         recipients: child.guardians
       });
 

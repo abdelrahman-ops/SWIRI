@@ -14,7 +14,8 @@ router.post(
       body: Joi.object({
         childId: Joi.string().required(),
         triggeredBy: Joi.string().valid("child", "device", "auto").optional(),
-        coordinates: Joi.array().items(Joi.number()).length(2).optional()
+        coordinates: Joi.array().items(Joi.number()).length(2).optional(),
+        imageUrl: Joi.string().uri().optional()
       }).required(),
       params: Joi.object({}),
       query: Joi.object({})
