@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 
 import apiRouter from "./routes/index.js";
 import ApiResponse from "./core/ApiResponse.js";
+import { connectDb } from "./config/db.js";
 import { requestContext } from "./middleware/requestContext.js";
 import { responseEnvelope } from "./middleware/responseEnvelope.js";
 import { notFound } from "./middleware/notFound.js";
@@ -32,6 +33,16 @@ app.use(
 
 app.get("/health", (req, res) => {
     return ApiResponse.ok(res, { status: "ok", service: "swiri" }, "Service health is good");
+});
+
+// Ensure MongoDB is connected before any API route (serverless-safe)
+app.use("/api", async (req, res, next) => {
+    try {
+        await connectDb(process.env.MONGO_URI);
+        next();
+    } catch (err) {
+        next(err);
+    }
 });
 
 app.use("/api", apiRouter);
