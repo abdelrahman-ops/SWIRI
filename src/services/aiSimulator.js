@@ -57,11 +57,11 @@ function classify(features) {
 
   // ── Danger (Class 2) ──
   // High HR + high gradient OR high HR + high acc variance
-  // Also catches "freeze" response: very high HR + very low acc variance
+  // Also catches "freeze" response: very high HR + virtually no movement
   if (
     (hr_mean >= 135 && hr_gradient >= 15) ||
     (hr_mean >= 135 && acc_variance >= 0.8) ||
-    (hr_mean >= 140 && hr_gradient >= 25 && acc_variance < 0.03) // freeze
+    (hr_mean >= 140 && acc_variance < 0.05) // freeze: high HR, no movement
   ) {
     // Confidence based on how far above thresholds
     const hrScore = Math.min((hr_mean - 135) / 30, 1);
